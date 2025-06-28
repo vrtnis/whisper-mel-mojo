@@ -55,6 +55,6 @@ fn run_pipeline(
         var s_i16: Int16 = (Int16(hi) << 8) | Int16(lo)
         audio[i] = Float64(s_i16) / 32_768.0
 
-
+    # ---- 2. log‑mel ------------------------------------------------------
     for frame in range(FRAMES):
         var off = frame * HOP
