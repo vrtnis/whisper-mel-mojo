@@ -23,6 +23,7 @@ fn conv3x3_gpu(
             s += mel_ptr[(y + ky) * stride + (x + kx)]
     out_ptr[y * out_w + x] = s / 9.0
 
+#public entry pt
 @export
 fn run_pipeline(
     pcm_ptr: UnsafePointer[UInt8],       # input PCM (little‑endian 16‑bit)
