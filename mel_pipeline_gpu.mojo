@@ -43,3 +43,14 @@ fn run_pipeline(
     var audio    = InlineArray[Float64, 16_000](fill=0.0)
     var windowed = InlineArray[Float64,     400](fill=0.0)
     var power    = InlineArray[Float64,     200](fill=0.0)
+
+
+    # ---- 1. unpack PCM -------------------------------------------------------
+    var total_samples = n_bytes // 2
+    for i in range(total_samples):
+        if i >= MAX_SAMPLES:
+            break
+        var lo = pcm_ptr[i * 2]
+        var hi = pcm_ptr[i * 2 + 1]
+        var s_i16: Int16 = (Int16(hi) << 8) | Int16(lo)
+        audio[i] = Float64(s_i16) / 32_768.0
