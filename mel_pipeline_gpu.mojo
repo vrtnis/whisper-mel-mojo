@@ -31,3 +31,10 @@ fn run_pipeline(
     mel_out: UnsafePointer[Float64],     # 98×80 pre‑allocated host buffer
     conv_out: UnsafePointer[Float64]     # 96×78 pre‑allocated host buffer
 ) raises:
+
+    # compile‑time constants (kept as vars so they’re visible in debugger)
+    var MAX_SAMPLES: Int = 16_000      # 1 s @ 16 kHz
+    var N_FFT:        Int = 400
+    var HOP:          Int = 160
+    var N_MELS:       Int = 80
+    var FRAMES:       Int = (MAX_SAMPLES - N_FFT) // HOP   # 98
