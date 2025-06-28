@@ -63,6 +63,7 @@ fn run_pipeline(
         for j in range(N_FFT):
             windowed[j] = audio[off + j] * hann(j, N_FFT)
 
+
         # power spectrum (naïve DFT)
         for k in range(N_FFT // 2):
             var re: Float64 = 0.0
