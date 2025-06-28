@@ -88,3 +88,14 @@ fn run_pipeline(
     var OUT_W = N_MELS - 2      # 78
 
     var ctx = DeviceContext()   # first visible GPU
+
+
+    ctx.enqueue_function[conv3x3_gpu](
+        mel_out,
+        conv_out,
+        N_MELS,
+        OUT_W,
+        OUT_H,
+        grid_dim  = (OUT_W, OUT_H, 1),
+        block_dim = (1, 1, 1)
+    )
