@@ -86,3 +86,5 @@ fn run_pipeline(
     # ---- 3. GPU 3×3 average conv --------------------------------------------
     var OUT_H = FRAMES - 2      # 96
     var OUT_W = N_MELS - 2      # 78
+
+    var ctx = DeviceContext()   # first visible GPU
