@@ -73,3 +73,11 @@ fn run_pipeline(
                 re += windowed[n] * cos(ang)
                 im -= windowed[n] * sin(ang)
             power[k] = re * re + im * im
+
+        # trivial rectangular mel bank + log10
+        var binsz = (N_FFT // 2) // N_MELS
+        for m in range(N_MELS):
+            var acc: Float64 = 0.0
+            for b in range(binsz):
+                acc += power[m * binsz + b]
+            mel_out[frame * N_MELS + m] = log10(acc + 1e-6)
