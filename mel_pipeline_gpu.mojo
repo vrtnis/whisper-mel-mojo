@@ -58,3 +58,7 @@ fn run_pipeline(
     # ---- 2. log‑mel ------------------------------------------------------
     for frame in range(FRAMES):
         var off = frame * HOP
+
+        # Hann window
+        for j in range(N_FFT):
+            windowed[j] = audio[off + j] * hann(j, N_FFT)
