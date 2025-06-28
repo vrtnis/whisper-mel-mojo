@@ -38,3 +38,8 @@ fn run_pipeline(
     var HOP:          Int = 160
     var N_MELS:       Int = 80
     var FRAMES:       Int = (MAX_SAMPLES - N_FFT) // HOP   # 98
+
+    # stack buffers
+    var audio    = InlineArray[Float64, 16_000](fill=0.0)
+    var windowed = InlineArray[Float64,     400](fill=0.0)
+    var power    = InlineArray[Float64,     200](fill=0.0)
