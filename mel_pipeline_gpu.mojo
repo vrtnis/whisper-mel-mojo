@@ -81,3 +81,8 @@ fn run_pipeline(
             for b in range(binsz):
                 acc += power[m * binsz + b]
             mel_out[frame * N_MELS + m] = log10(acc + 1e-6)
+
+
+    # ---- 3. GPU 3×3 average conv --------------------------------------------
+    var OUT_H = FRAMES - 2      # 96
+    var OUT_W = N_MELS - 2      # 78
