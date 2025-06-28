@@ -9,7 +9,6 @@ fn conv3x3_gpu(
     out_h: Int
 ):
 
-
     # one thread ↔ one output pixel
     var x = block_idx.x
     var y = block_idx.y
