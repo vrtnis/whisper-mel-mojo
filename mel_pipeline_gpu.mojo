@@ -54,3 +54,7 @@ fn run_pipeline(
         var hi = pcm_ptr[i * 2 + 1]
         var s_i16: Int16 = (Int16(hi) << 8) | Int16(lo)
         audio[i] = Float64(s_i16) / 32_768.0
+
+
+    for frame in range(FRAMES):
+        var off = frame * HOP
