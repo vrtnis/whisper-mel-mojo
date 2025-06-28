@@ -1,6 +1,8 @@
 # mel_pipeline_gpu.mojo
 
 
+
+# gpu kernel
 fn conv3x3_gpu(
     mel_ptr: UnsafePointer[Float64, mut=False],   # read‑only
     out_ptr: UnsafePointer[Float64],              # write‑only
