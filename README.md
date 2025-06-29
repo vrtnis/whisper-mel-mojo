@@ -51,10 +51,20 @@ mojo build mel_pipeline_gpu.mojo --emit shared-lib -o libmel.so
 
 # 2. Run the Python driver (benchmarks + sanity check)
 python pipeline.py
-
 ```
 
-### Impact 
+## Example Output 
+
+Running `pipeline.py` directly **compares** our Mojo-based front-end to the standard Librosa + torchaudio workflow.
+
+```bash
+=== Whisper Front-End Comparison ===
+Mojo path   : host↔device copies = 0, peak GPU memory = 412 MB
+Librosa/PT  : copies = 2, peak host memory = 546 MB
+====================================
+```
+
+### Impact
 
 
 Implemented a Mojo kernel that consolidates PCM→log-Mel spectrogram extraction and a 3 × 3 average convolution into a single DeviceContext.enqueue_function call, eliminating all host↔device transfers for the front-end and reducing data movement and memory overhead by roughly 50%. This not only accelerates inference but also confines raw audio (potentially sensitive PII) to GPU memory, easing compliance for privacy-critical workloads.
@@ -71,7 +81,7 @@ Cross-arch portability: the exact same Mojo source runs on NVIDIA, Apple Metal (
 
 ### Some Considerations
 
-Recent changes to Mojo—such as the removal of the let keyword, updates to pointer syntax, and the relocation of FFT helpers out of the standard library—initially caused build failures. Additionally, the absence of a built-in forward FFT necessitated implementing a naïve DFT loop, resulting in significantly slower performance. Identifying the correct buffer-access method (InlineArray.unsafe_ptr() rather than unsafe_pointer()) required considerable troubleshooting, and obtaining accurate GPU-memory metrics via pynvml demanded deliberate warm-up routines and explicit synchronization across multiple kernel launches.
+Recent changes to Mojo - such as the removal of the let keyword, updates to pointer syntax, and the relocation of FFT helpers out of the standard library  - initially caused build failures. Additionally, the absence of a built-in forward FFT necessitated implementing a naïve DFT loop, resulting in significantly slower performance. Identifying the correct buffer-access method (InlineArray.unsafe_ptr() rather than unsafe_pointer()) required considerable troubleshooting, and obtaining accurate GPU-memory metrics via pynvml demanded deliberate warm-up routines and explicit synchronization across multiple kernel launches.
 
 ###  Future Work
 
