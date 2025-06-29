@@ -9,8 +9,6 @@ from gpu.id import block_idx, thread_idx          # thread/block indices
 fn hann(n: Int, N: Int) -> Float64:
     return 0.5 * (1.0 - cos(2.0 * pi * Float64(n) / Float64(N - 1)))
 
-
-
 # gpu kernel
 fn conv3x3_gpu(
     mel_ptr: UnsafePointer[Float64, mut=False],   # read‑only
