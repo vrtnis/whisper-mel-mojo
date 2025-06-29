@@ -1,48 +1,69 @@
-# Whisper-Mel-Mojo
+# Whisper‑Mel‑Mojo
 
-A fast, portable Mojo kernel that fuses **log-Mel spectrogram** extraction and a **3×3 convolution**, ready to plug into **MAX Graph** or PyTorch as a custom op.
+A fast, portable **Mojo** kernel that fuses **log‑Mel spectrogram** extraction and a **3 × 3 average convolution**, ready to plug into **MAX Graph** or PyTorch as a custom op.
 
+---
 
-# Mel Spectrogram and Whisper Front-End
+## Mel Spectrogram and Whisper Front‑End
 
 A **Mel spectrogram** is a time–frequency representation of audio where:
 
-- The **frequency axis is warped to the Mel scale**, approximating human pitch perception by spacing bands more finely at low frequencies and more coarsely at high frequencies ([source](https://ketanhdoshi.github.io)).
-- **Amplitudes are converted to decibels** (a logarithmic scale), matching how humans perceive loudness ([source](https://medium.com)).
-- This compact representation (e.g., 80 bins per time step) is the *de facto* input for speech and audio deep-learning models ([source](https://huggingface.co)).
+- The **frequency axis is warped to the Mel scale**, matching human pitch perception by placing denser filter‑banks at low frequencies and sparser ones at high frequencies.  
+- **Amplitudes are mapped to decibels (log scale)**, reflecting the logarithmic way humans perceive loudness and compressing the very wide dynamic range of raw power values .  
+- A compact 80‑bin log‑Mel frame is the *de‑facto* input feature for modern speech models, including Whisper and many Hugging Face audio checkpoints .
 
 ---
 
-## Whisper
+### Whisper
 
-[OpenAI Whisper](https://openai.com/research/whisper) is an encoder–decoder Transformer designed for speech tasks such as transcription, translation, and timestamping. It expects:
+[OpenAI Whisper](https://openai.com/research/whisper) is an encoder–decoder Transformer trained on 680 k h of multilingual speech.  Its front‑end expects:
 
-- Audio resampled to **16 kHz**
-- **80-channel log-Mel spectrograms**:
-  - Computed using 25 ms windows
-  - 10 ms stride
-  - Split into 30-second chunks  
-    ([sources](https://cdn.openai.com/whisper/draft.pdf), [openai.com](https://openai.com))
+| Requirement | Value |
+|-------------|-------|
+| Audio sample rate | **16 kHz** |
+| Spectrogram channels | **80 log‑Mel bins** |
+| FFT window / hop | **25 ms / 10 ms** |
+| Chunk length | **30 s** |
+
+
+
+
+This project re‑implement the **exact Whisper front‑end**—including the 3 × 3 smoothing convolution in a single, hardware‑agnostic Mojo kernel, allowing the entire pipeline to stay on‑device with zero host↔device copies.
+
+
+
+            ┌─────────────┐
+            │ WAV / PCM   │ 16‑kHz mono
+            └──────┬──────┘
+                   │
+                   ▼
+    ┌─────────────────────────┐
+    │   Mojo log‑Mel kernel   │ 80×T
+    └──────┬──────────────────┘
+           │  fused 3×3 avg‑pool
+           ▼
+ ┌──────────────────────────────┐
+ │ Whisper‑ready feature tensor │
+ └──────────────────────────────┘
+           │
+           ▼
+(MAX Graph / PyTorch op)
+
+
+## 🎯 Features
+
+- **Pure Mojo, one file** – the same source compiles for CPU, NVIDIA CUDA, Apple Metal, and (soon) AMD ROCm via MAX’s MLIR back‑end :contentReference[oaicite:7]{index=7}.  
+- **Drop‑in MAX Graph & PyTorch op** – paste the kernel into `ops.custom` or expose it through `torch.ops` with no code changes; community examples already demonstrate the pattern :contentReference[oaicite:8]{index=8}.  
+- **Zero‑copy execution** – audio and feature buffers remain in unified GPU memory, avoiding redundant PCIe traffic and reducing peak host RAM :contentReference[oaicite:9]{index=9}.
 
 ---
 
-## Our Project
+## 🛠 Build & Run
 
-Our project implements the **exact same front-end** as Whisper—  
-but in a **single, hardware-agnostic Mojo kernel**.
+```bash
+# 1. Build the shared library
+mojo build mel_pipeline_gpu.mojo --emit shared-lib -o libmel.so
 
+# 2. Run the Python driver (benchmarks + sanity check)
+python pipeline.py
 
-
-## 🎯 Features
-
-- **Pure Mojo**:  
-  Single source file handles both Mel spectrogram extraction and 3×3 average convolution.
-
-- **Cross-platform**:  
-  Runs on CPU, NVIDIA CUDA, Apple Metal, and (soon) AMD ROCm using [MAX’s MLIR back-end](https://docs.github.com).
-
-- **MAX Graph & PyTorch custom op**:  
-  Copy-paste the same kernel into `ops.custom` or `torch.ops`—no changes needed ([example](https://github.com)).
-
-- **Zero-copy**:  
-  Audio and feature buffers stay in device memory—no costly host↔device transfers.

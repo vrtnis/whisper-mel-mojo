@@ -87,12 +87,12 @@ def stats(mojo_gpu_mb: str, librosa_gpu_mb: str | int, librosa_host_mb: int) -> 
     
 #main    
     
-    def main() -> None:
+def main() -> None:
     import wave
     from pathlib import Path
     from mojo_mel import run_pipeline
 
-    wav_path = Path("voice_1s.wav")
+    wav_path = Path("audio_sample/voice_1s.wav")
     if not wav_path.exists():
         raise FileNotFoundError("voice_1s.wav not found")
 
