@@ -83,3 +83,43 @@ def stats(mojo_gpu_mb: str, librosa_gpu_mb: str | int, librosa_host_mb: int) -> 
         f"{lib_gpu_txt if lib_gpu_txt != 'n/a' else f'{librosa_host_mb} MB'}"
     )
     print("====================================\n")
+    
+    
+#main    
+    
+    def main() -> None:
+    import wave
+    from pathlib import Path
+    from mojo_mel import run_pipeline
+
+    wav_path = Path("voice_1s.wav")
+    if not wav_path.exists():
+        raise FileNotFoundError("voice_1s.wav not found")
+
+    with wave.open(str(wav_path), "rb") as wf:
+        pcm = wf.readframes(wf.getnframes())
+
+    # ── Mojo path ─────────────────────────────────────────────────────────── #
+    gpu_before = _gpu_used_mb()
+    run_pipeline(pcm)           # warm‑up
+    for _ in range(9):
+        run_pipeline(pcm)
+    mojo_gpu_peak = _gpu_used_mb() - gpu_before
+
+    # ── Librosa/PT path ───────────────────────────────────────────────────── #
+    gpu_before = _gpu_used_mb()
+    host_before = _host_used_mb()
+    run_librosa_pt(pcm)         # one run is enough
+    librosa_gpu_peak = _gpu_used_mb() - gpu_before
+    librosa_host_peak = _host_used_mb() - host_before
+
+    # ── Emit report ───────────────────────────────────────────────────────── #
+    mojo_gpu_text = f"{mojo_gpu_peak} MB" if mojo_gpu_peak else "n/a"
+    stats(mojo_gpu_text, librosa_gpu_peak, librosa_host_peak)
+
+    if _GPU_OK:
+        nvmlShutdown()
+
+
+if __name__ == "__main__":
+    main()
