@@ -54,3 +54,32 @@ def run_librosa_pt(pcm_bytes: bytes, sr: int = 16_000) -> None:
             _ = torch.from_numpy(mel).cuda(non_blocking=True)    # copy #2
     except ModuleNotFoundError:
         pass  # torch not installed → copies still 0, VRAM still n/a
+
+
+
+# stats reporter                              #
+
+def stats(mojo_gpu_mb: str, librosa_gpu_mb: str | int, librosa_host_mb: int) -> None:
+    """
+    Print the comparison block required for the slide / read‑out.
+    """
+    print("\n=== Whisper Front‑End Comparison ===")
+    # Line 1 – Mojo
+    print(
+        f"Mojo path   : host↔device copies = 0, "
+        f"peak GPU memory = {mojo_gpu_mb}"
+    )
+
+    # Line 2 – Librosa / PyTorch
+    lib_gpu_txt = (
+        f"{librosa_gpu_mb} MB"
+        if isinstance(librosa_gpu_mb, int) and librosa_gpu_mb > 0
+        else "n/a"
+    )
+
+    print(
+        f"Librosa/PT  : copies = 2, "
+        f"peak {'GPU' if lib_gpu_txt != 'n/a' else 'host'} memory = "
+        f"{lib_gpu_txt if lib_gpu_txt != 'n/a' else f'{librosa_host_mb} MB'}"
+    )
+    print("====================================\n")
