@@ -99,3 +99,5 @@ fn run_pipeline(
         grid_dim  = (OUT_W, OUT_H, 1),
         block_dim = (1, 1, 1)
     )
+
+    ctx.synchronize()           # wait for completion before returning
